@@ -9,3 +9,4 @@ namespace Texture
 		texture.loadFromFile("Image/minesweeper.png");
 	}
 };
+
