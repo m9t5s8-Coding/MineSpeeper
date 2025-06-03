@@ -133,6 +133,7 @@ void Board::revealCell(sf::Vector2i cellCord)
 			clickedMinePosition = cellCord;
 			revealBoard();
 			gameOver = true;
+			std::cout << "Game Over" << std::endl;
 		}
 		openNeighbour(cellCord);
 	}
@@ -208,7 +209,7 @@ void Board::winCondition()
 				return;
 		}
 	}
-
+	std::cout << "Game Won" << std::endl;
 	hasWon = true;
 }
 

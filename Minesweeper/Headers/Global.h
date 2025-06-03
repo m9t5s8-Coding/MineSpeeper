@@ -12,7 +12,7 @@
 #include <map>
 #include <algorithm>  // for std::set_difference
 #include <iterator>   // for std::inserter
-
+#include <conio.h>
 constexpr unsigned int SCREEN_WIDTH = 400;
 constexpr unsigned int SCREEN_HEIGHT = 280;
 
@@ -22,7 +22,7 @@ constexpr unsigned char WIDTH = 16;
 constexpr unsigned char HEIGHT = 16;
 constexpr unsigned char MINES = 40;
 constexpr int UNKNOWN = -1;
-constexpr float aiDelay = 0.1f;
+constexpr float aiDelay = 0.25f;
 extern sf::Vector2f boardPosition;
 extern bool gameOver,hasWon;
 

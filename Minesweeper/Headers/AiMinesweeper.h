@@ -26,7 +26,7 @@ public:
 	void copyBoard(const std::vector<std::vector<CELL>>&);
 	MOVES getRandomMoves();
 	MOVES lookNeighbour();
-	MOVES makeProablilityMoves();
+	MOVES subsetElimination();
 	MOVES getHint();
 };
 
