@@ -4,7 +4,11 @@
 Board::Board()
 	:sprite(Texture::texture),
 	userClickedMine(false),
-	firstClick(true)
+	firstClick(true),
+	startGame(false),
+	HClickedOnce(false),
+	RClickedOnce(false),
+	SpaceClickedOnce(false)
 {
 	boardPosition = sf::Vector2f({ SCREEN_WIDTH / 2 - (WIDTH * CELL_SIZE / 2),
 		SCREEN_HEIGHT / 2 - (HEIGHT * CELL_SIZE / 2) });
@@ -19,11 +23,16 @@ Board::Board()
 		cell[i].resize(HEIGHT);
 	}
 	setBoard();
+	ai = new AiMinesweeper();
+	
+	hint.cellCord = sf::Vector2i({ -1,-1 });
+	
+	
 	
 }
 Board::~Board()
 {
-
+	delete ai;
 }
 void Board::setBoard()
 {
@@ -61,8 +70,13 @@ void Board::placeMines(sf::Vector2i safeCell)
 
 	for (unsigned short mineCount = 0; mineCount < MINES;)
 	{
-		int row = rand() % WIDTH;
-		int col = rand() % HEIGHT;
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_int_distribution<> distX(0, WIDTH - 1);
+		std::uniform_int_distribution<> distY(0, HEIGHT - 1);
+
+		int row = distX(gen);
+		int col = distY(gen);
 		if (excluded.count({ row, col }) == 0 && !cell[row][col].isMine)
 		{
 			cell[row][col].isMine = true;
@@ -122,7 +136,9 @@ void Board::revealCell(sf::Vector2i cellCord)
 		}
 		openNeighbour(cellCord);
 	}
+	ai->copyBoard(cell);
 	winCondition();
+	hint.cellCord = sf::Vector2i({ -1,-1 });
 }
 
 void Board::flagCell(sf::Vector2i cellCord)
@@ -130,9 +146,12 @@ void Board::flagCell(sf::Vector2i cellCord)
 	CELL& grid = cell[cellCord.x][cellCord.y];
 	if (!grid.isRevealed)
 	{
-		grid.isFlagged = true;
+		grid.isFlagged = !grid.isFlagged;
 	}
+	ai->copyBoard(cell);
 	winCondition();
+	hint.cellCord = sf::Vector2i({ -1,-1 });
+	
 }
 
 void Board::openNeighbour(sf::Vector2i cellCord)
@@ -193,6 +212,57 @@ void Board::winCondition()
 	hasWon = true;
 }
 
+void Board::aiSetup()
+{
+	if (aiClock.getElapsedTime().asSeconds() > aiDelay && !gameOver && !hasWon)
+	{
+		aiClock.restart();
+		if (firstClick)
+		{
+			moves = ai->getRandomMoves();
+		}
+		else
+		{
+			moves = ai->lookNeighbour();
+			if (!moves.isValid)
+			{
+				//moves = ai->getRandomMoves();
+				return;
+			}
+		}
+		if (moves.isReveal)
+		{
+			revealCell(moves.cellCord);
+		}
+		else
+		{
+			flagCell(moves.cellCord);
+		}
+
+
+		
+	}
+}
+
+
+	void Board::restartGame()
+	{
+		firstClick = true;
+		userClickedMine = false;
+		gameOver = false;
+		hasWon = false;
+		startGame = false;
+		hint = MOVES();        
+		hint.cellCord = sf::Vector2i({ -1,-1 });
+		moves = MOVES();      
+		RClickedOnce = false;  
+		HClickedOnce = false;
+		SpaceClickedOnce = false;
+		setBoard();   
+		std::cout << "Game Restarted!" << std::endl;
+	}
+
+
 void Board::setTexture(int i, int j)
 {
 	sf::Vector2i position;
@@ -227,13 +297,66 @@ void Board::setTexture(int i, int j)
 			position = sf::Vector2i({ 2 * CELL_SIZE,CELL_SIZE });
 		}
 	}
-	
+	if (hint.cellCord.x == i && hint.cellCord.y == j && hint.isReveal)
+	{
+		position = sf::Vector2i({ 6 * CELL_SIZE,CELL_SIZE });
+	}
+	else if (hint.cellCord.x == i && hint.cellCord.y == j && !hint.isReveal)
+	{
+		position = sf::Vector2i({ 5 * CELL_SIZE,CELL_SIZE });
+	}
 	sf::Vector2i size({ CELL_SIZE,CELL_SIZE });
 	sprite.setTextureRect({position,size });
 }
 void Board::Update()
 {
-
+	if (gameOver || hasWon)
+	{
+		bool isRClicked = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R);
+		if (isRClicked && !RClickedOnce)
+		{
+			restartGame();
+			RClickedOnce = true;
+		}
+		else if (!isRClicked)
+		{
+			RClickedOnce = false;
+		}
+	}
+	if (aiEnabled)
+	{
+		if (!startGame)
+		{
+			bool isSpaceClicked = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+			if (isSpaceClicked && !SpaceClickedOnce)
+			{
+				startGame = true;
+				aiClock.restart();
+				SpaceClickedOnce = true;
+			}
+			else if (!isSpaceClicked)
+			{
+				SpaceClickedOnce = false;
+			}
+		}
+		else
+		{
+			aiSetup();
+		}
+	}
+	else
+	{
+		bool isHClicked = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H);
+		if (isHClicked && !HClickedOnce)
+		{
+			hint = ai->getHint();
+			HClickedOnce = true;
+		}
+		else if (!isHClicked)
+		{
+			HClickedOnce = false;
+		}
+	}
 }
 void Board::Draw(sf::RenderTarget& target)
 {

@@ -3,3 +3,4 @@
 sf::Vector2f boardPosition;
 bool gameOver = false;
 bool hasWon = false;
+bool aiEnabled = false;

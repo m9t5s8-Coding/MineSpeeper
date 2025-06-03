@@ -61,18 +61,16 @@ void Game::handleClicks()
 void Game::Update()
 {
 	
-	if (!gameOver && !hasWon)
+	if (!gameOver && !hasWon && !aiEnabled)
 	{
 		getMousePosition();
 		handleClicks();
 	}
 	else if( gameOver)
 	{
-		std::cout << "Game is over! YOU LOSE" << std::endl;
 	}
 	else if (hasWon)
 	{
-		std::cout << "YOU WIN" << std::endl;
 	}
 	board->Update();
 }

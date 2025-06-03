@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AiMinesweeper.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Global.cpp" />
@@ -142,6 +143,7 @@
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\AiMinesweeper.h" />
     <ClInclude Include="Headers\Board.h" />
     <ClInclude Include="Headers\Game.h" />
     <ClInclude Include="Headers\Global.h" />
